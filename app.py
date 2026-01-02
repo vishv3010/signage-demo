@@ -52,13 +52,20 @@ def register_device():
 # 3. Upload video
 @app.route("/upload", methods=["POST"])
 def upload():
-    customer_id = request.form["customer_id"]
-    file = request.files["video"]
+    customer_id = request.form.get("customer_id")
+    file = request.files.get("video")
+
+    if not customer_id or not file:
+        return {"error": "missing customer_id or video"}, 400
+
+    # ✅ CREATE FOLDER IF IT DOES NOT EXIST
+    os.makedirs(f"videos/{customer_id}", exist_ok=True)
 
     path = f"videos/{customer_id}/{file.filename}"
     file.save(path)
 
     return {"message": "uploaded"}
+
 
 # 4. Assign video to device
 assignments = {}
@@ -97,3 +104,4 @@ def serve_video(customer_id, filename):
 # ---------- run ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
